@@ -1,0 +1,28 @@
+# Virtual environments
+venv/
+venv*/
+.env
+.env.*
+
+# Chroma / Vector DB
+db/
+.chroma/
+
+# PDF data
+data/*.pdf
+uploads/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs
+*.log
+logs/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
