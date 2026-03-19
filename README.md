@@ -1,21 +1,104 @@
 # RAG API
 
+A Retrieval-Augmented Generation (RAG) API built with FastAPI that allows you to query embedded documents using natural language. This repository demonstrates how to store embeddings in ChromaDB and run model inference — now updated to use the OpenAI API for embeddings and chat/completion.
+# RAG API
+
 A Retrieval-Augmented Generation (RAG) API built with FastAPI that allows you to query embedded documents using natural language. This project uses ChromaDB for vector storage and Ollama for language model inference.
-
-## Features
-
-- **Document Embedding**: Store and index documents for semantic search
-- **Natural Language Queries**: Ask questions about your documents in plain English
-- **RESTful API**: Simple HTTP endpoints for adding content and querying
-- **Persistent Storage**: Documents are stored in a local ChromaDB database
 
 ## Prerequisites
 
-- Python 3.8 or higher
-- [Ollama](https://ollama.ai/) installed and running
-- TinyLlama model pulled in Ollama (`ollama pull tinyllama`)
+- **Python 3.8+** installed
+- An OpenAI API key with access to embeddings and chat models
+- `ollama` is no longer required for the OpenAI workflow
 
-## Installation
+## Install dependencies
+
+Run:
+
+```bash
+pip install -r requirements.txt
+# or, if you prefer installing manually:
+pip install fastapi chromadb openai uvicorn
+```
+
+If you don't have a `requirements.txt` file, create one with these lines:
+
+```
+fastapi
+chromadb
+openai
+uvicorn
+```
+
+**Set your OpenAI API key (PowerShell)**
+
+```powershell
+$env:OPENAI_API_KEY = "sk-..."
+```
+
+On macOS / Linux (bash/zsh):
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+**Embedding documents**
+
+- `embed.py` now uses OpenAI embeddings. To embed `k8s.txt` and store it in ChromaDB run:
+
+```bash
+python embed.py
+```
+
+- Behind the scenes `embed.py` calls OpenAI's Embeddings API (`text-embedding-3-small`) and stores the vector in the local ChromaDB at `./db`.
+
+**Running the API**
+
+- Start the FastAPI server:
+
+```bash
+uvicorn app:app --reload
+```
+
+- Endpoints provided by the app:
+
+- **POST** `/add` — Add a new document to the knowledge base. The server will create an OpenAI embedding for the text and store it in ChromaDB. Example using `curl`:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/add" -H "Content-Type: application/json" -d '{"text":"My new knowledge"}'
+```
+
+- **POST** `/query` — Query the knowledge base. The server performs a Chroma nearest-neighbor search, then sends the found context to the OpenAI Chat API to generate a concise answer. Example:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"q":"What is Kubernetes?"}'
+```
+
+**Files to inspect**
+
+- The embedding script: [embed.py](embed.py)
+- The API server: [app.py](app.py)
+
+**Notes & tips**
+
+- Model choices:
+  - Embeddings: `text-embedding-3-small` is used by default. You can change this in `embed.py` and `app.py` when creating embeddings.
+  - Chat/Completion: the current code uses `gpt-4o-mini` for concise answers; change the `model` in `app.py` to another compatible OpenAI model if desired.
+
+- ChromaDB storage:
+  - The Chroma DB files are stored under `./db` (see the `db/` folder). Keep this directory if you want to preserve embeddings between runs.
+
+- API key security:
+  - Do not commit your `OPENAI_API_KEY` to source control. Use environment variables or a secrets manager in production.
+
+**Rollback to Ollama (if needed)**
+
+If you prefer to use Ollama/TinyLlama again, the previous implementation used `ollama.generate(model="tinyllama", ...)` in `app.py` and `ollama.embed` in earlier embedding code. That approach required an `ollama` daemon and a downloaded TinyLlama model.
+
+**Next steps**
+
+- Run `python embed.py` to store embeddings, then start the server with `uvicorn app:app --reload` and test the endpoints.
+- If you want, I can also add a `requirements.txt`, a `.env` example, or a short test script that exercises `/add` and `/query` automatically.
 
 1. Clone this repository:
    ```bash
