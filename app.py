@@ -4,17 +4,12 @@ from typing import Annotated, List
 import os
 import uuid
 import chromadb
-from google import genai
 from dotenv import load_dotenv
 from doc_utils import embed_and_add
 from gemini_client import client
 from fastapi.openapi.utils import get_openapi
 
 load_dotenv()
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise RuntimeError("Missing GEMINI_API_KEY in environment variables")
 
 DOCS_DIR = "documents"
 os.makedirs(DOCS_DIR, exist_ok=True)
@@ -59,7 +54,7 @@ def get_embedding(text: str) -> list[float]:
     model="gemini-embedding-001",
     contents=text
 )
-    return result.embeddings[0].values        # new SDK returns object, not dict
+    return result.embeddings[0].values
 
 
 # ── routes ───────────────────────────────────────────────────────────────────
